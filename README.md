@@ -2,7 +2,7 @@
 
 > A fast, responsive, and production-ready e-commerce platform built with React.js. Shop freely as a guest, manage your cart, pay securely via Stripe, and track your orders — all wrapped in a bold, modern design.
 
-**Live Demo:** [https://omarlokma.github.io/KART-X/](https://omarlokma.github.io/KART-X/)
+[**Live Demo**](https://omarlokma.github.io/KART-X/)
 
 ---
 
