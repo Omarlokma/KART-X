@@ -1,17 +1,38 @@
 import React, { useState, useContext } from 'react'
-import { useLoaderData, Link } from 'react-router-dom'
+import { useLoaderData, Link, useNavigate } from 'react-router-dom'
 import { CartContext } from '../../context/CartContext'
+import { UserContext } from '../../context/UserContext'
 import toast from 'react-hot-toast'
 import './ProductDetails.css'
 
 export default function ProductDetails() {
   const product = useLoaderData();
   const { addProductToCart } = useContext(CartContext);
+  const { userToken } = useContext(UserContext);
+  const navigate = useNavigate();
   const [selectedImg, setSelectedImg] = useState(product.imageCover);
   const [isAdding, setIsAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
   async function handleAddToCart() {
+    if (!userToken) {
+      toast.error(
+        (t) => (
+          <span>
+            Please{' '}
+            <a
+              onClick={() => { toast.dismiss(t.id); navigate('/login'); }}
+              style={{ color: '#ff6b35', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              sign in
+            </a>
+            {' '}to add items to your cart.
+          </span>
+        ),
+        { duration: 4000 }
+      )
+      return
+    }
     setIsAdding(true);
     let response = await addProductToCart(product._id || product.id);
     if (response?.data?.status === 'success') {

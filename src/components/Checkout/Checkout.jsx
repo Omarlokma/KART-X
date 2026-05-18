@@ -35,7 +35,7 @@ export default function Checkout() {
       localStorage.setItem('localOrders', JSON.stringify([newOrder, ...existingOrders]))
     }
 
-    const baseUrl = window.location.origin
+    const baseUrl = `${window.location.origin}${window.location.pathname}#/allorders`
     const response = await onlinePayment(cartId, baseUrl, values)
     if (response?.data?.status === 'success') {
       window.location.href = response.data.session.url

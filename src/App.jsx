@@ -20,9 +20,9 @@ function App() {
   let paths = createHashRouter([
     {
       path: '', element: <Layout />, children: [
-        { index: true,         element: <ProtectedRoute><Products /></ProtectedRoute> },
-        { path: 'product/:id', element: <ProtectedRoute><ProductDetails /></ProtectedRoute>, loader: productDetailsLoader },
-        { path: 'brands',      element: <ProtectedRoute><Brands /></ProtectedRoute> },
+        { index: true,         element: <Products /> },
+        { path: 'product/:id', element: <ProductDetails />, loader: productDetailsLoader },
+        { path: 'brands',      element: <Brands /> },
         { path: 'carts',       element: <ProtectedRoute><Carts /></ProtectedRoute> },
         { path: 'login',       element: <Login /> },
         { path: 'register',    element: <Register /> },

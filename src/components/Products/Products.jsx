@@ -1,8 +1,9 @@
 import axios from 'axios'
-import { useState, useEffect, useContext } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect, useContext, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import Loader from '../Loader/Loader'
 import { CartContext } from '../../context/CartContext'
+import { UserContext } from '../../context/UserContext'
 import CategorySlider from '../CategorySlider/CategorySlider'
 import HeroSlider from '../HeroSlider/HeroSlider'
 import toast from 'react-hot-toast'
@@ -13,8 +14,30 @@ export default function Products() {
   const [isLoading, setLoading] = useState(true)
   const [loadingId, setLoadingId] = useState(null)
   const { addProductToCart } = useContext(CartContext)
+  const { userToken } = useContext(UserContext)
+  const navigate = useNavigate()
+  const productsGridRef = useRef(null)
 
   async function addProductItem(id) {
+    // لو مش logged in → أظهر Toast بيطلب منه يسجل دخول
+    if (!userToken) {
+      toast.error(
+        (t) => (
+          <span>
+            Please{' '}
+            <a
+              onClick={() => { toast.dismiss(t.id); navigate('/login'); }}
+              style={{ color: '#ff6b35', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              sign in
+            </a>
+            {' '}to add items to your cart.
+          </span>
+        ),
+        { duration: 4000 }
+      )
+      return
+    }
     setLoadingId(id)
     let response = await addProductToCart(id)
     if (response?.data?.status === 'success') {
@@ -62,14 +85,17 @@ export default function Products() {
                 <h1 className="kx-section-title">PRODUCTS</h1>
                 <div className="kx-title-line"></div>
               </div>
-              <a href="#products-grid" className="kx-see-all-btn">
+              <button
+                className="kx-see-all-btn"
+                onClick={() => productsGridRef.current?.scrollIntoView({ behavior: 'smooth' })}
+              >
                 SEE ALL <i className="fas fa-arrow-right"></i>
-              </a>
+              </button>
             </div>
 
             <CategorySlider />
 
-            <div className="products-grid" id="products-grid">
+            <div className="products-grid" id="products-grid" ref={productsGridRef}>
             {product.map((productInfo) => (
               <div key={productInfo.id} className="kx-product-card">
 
