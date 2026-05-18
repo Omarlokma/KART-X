@@ -1,5 +1,5 @@
 import './App.css'
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+import { createHashRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import Layout from './components/Layout/Layout'
 import Products from './components/Products/Products'
@@ -17,7 +17,7 @@ import AllOrders from './components/AllOrders/AllOrders'
 import { productsLoader, productDetailsLoader } from './loaders/loaders'
 
 function App() {
-  let paths = createBrowserRouter([
+  let paths = createHashRouter([
     {
       path: '', element: <Layout />, children: [
         { index: true,         element: <ProtectedRoute><Products /></ProtectedRoute> },
