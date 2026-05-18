@@ -1,0 +1,203 @@
+.kx-orders-page {
+  padding: 3rem 0;
+  min-height: 70vh;
+}
+
+.kx-empty-orders {
+  text-align: center;
+  padding: 4rem 1rem;
+  background: #fff;
+  border: 3px solid #111;
+  border-radius: 8px;
+  box-shadow: 6px 6px 0 #ff6b35;
+}
+
+.kx-empty-icon {
+  font-size: 4rem;
+  color: #ff6b35;
+  margin-bottom: 1.5rem;
+}
+
+.kx-empty-orders h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.kx-empty-orders p {
+  color: #555;
+  margin-bottom: 2rem;
+}
+
+.kx-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.kx-order-card {
+  background: #fff;
+  border: 3px solid #111;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 4px 4px 0 #111;
+  transition: all 0.2s ease;
+}
+
+.kx-order-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #ff6b35;
+}
+
+.kx-order-header {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-bottom: 3px solid #111;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.kx-order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.kx-order-id {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+.kx-order-date {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.kx-order-total {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.kx-order-total span {
+  color: #ff6b35;
+}
+
+.kx-order-items {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.kx-order-item {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.kx-order-item:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.kx-order-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border: 2px solid #111;
+  border-radius: 4px;
+}
+
+.kx-item-details {
+  flex: 1;
+}
+
+.kx-item-details h4 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+}
+
+.kx-item-details p {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.kx-item-price-qty {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.kx-item-price {
+  font-weight: 700;
+  color: #111;
+}
+
+.kx-item-qty {
+  background: #111;
+  color: #fff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.kx-order-footer {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-top: 3px solid #111;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.kx-shipping-info {
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.kx-status-badge {
+  background: #ff6b35;
+  color: #fff;
+  padding: 0.4rem 1rem;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  border: 2px solid #111;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .kx-order-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .kx-order-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .kx-order-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}

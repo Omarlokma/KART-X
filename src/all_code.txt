@@ -1,0 +1,1539 @@
+﻿import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import Loader from '../Loader/Loader';
+import './Brands.css';
+
+export default function Brands() {
+  const [brands, setBrands] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  async function getBrands() {
+    setIsLoading(true);
+    try {
+      const { data } = await axios.get('https://ecommerce.routemisr.com/api/v1/brands');
+      setBrands(data.data);
+      setIsLoading(false);
+    } catch (err) {
+      console.error('Error fetching brands:', err);
+      setError('Failed to load brands. Please try again later.');
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    getBrands();
+  }, []);
+
+  if (isLoading) return <Loader />;
+
+  return (
+    <div className="brands-page">
+      <div className="container">
+        <div className="brands-header">
+          <h1 className="brands-title">Our Brands</h1>
+          <p className="brands-subtitle">Explore top-quality products from your favorite brands</p>
+        </div>
+
+        {error ? (
+          <div className="error-message">{error}</div>
+        ) : (
+          <div className="brands-grid">
+            {brands.map((brand) => (
+              <div key={brand._id} className="brand-card">
+                <div className="brand-img-wrapper">
+                  <img src={brand.image} alt={brand.name} className="brand-img" loading="lazy" />
+                </div>
+                <h3 className="brand-name">{brand.name}</h3>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+import React, { useContext, useEffect, useState } from 'react'
+import { CartContext } from '../../context/CartContext'
+import { Link } from 'react-router-dom'
+import Loader from '../Loader/Loader'
+import './Carts.css'
+
+export default function Carts() {
+  const { getLoggedUserCart, removeCartItem, updateCartProductQuantity, clearCart } = useContext(CartContext)
+  const [cart, setCart] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [updatingId, setUpdatingId] = useState(null)
+
+  async function fetchCart() {
+    setIsLoading(true)
+    const response = await getLoggedUserCart()
+    setCart(response?.data)
+    setIsLoading(false)
+  }
+
+  async function handleRemove(productId) {
+    setUpdatingId(productId)
+    const response = await removeCartItem(productId)
+    setCart(response?.data)
+    setUpdatingId(null)
+  }
+
+  async function handleUpdate(productId, count) {
+    if (count < 1) return
+    setUpdatingId(productId)
+    const response = await updateCartProductQuantity(productId, count)
+    setCart(response?.data)
+    setUpdatingId(null)
+  }
+
+  async function handleClear() {
+    await clearCart()
+    setCart(null)
+  }
+
+  useEffect(() => { fetchCart() }, [])
+
+  if (isLoading) return <Loader />
+
+  // â”€â”€ Empty Cart â”€â”€
+  if (!cart || cart.numOfCartItems === 0) {
+    return (
+      <div className="kx-cart-empty">
+        <i className="fas fa-cart-shopping kx-empty-icon"></i>
+        <h2 className="kx-empty-title">YOUR CART IS EMPTY</h2>
+        <p className="kx-empty-msg">Looks like you haven't added anything yet.</p>
+        <Link to="/" className="kx-empty-btn">
+          <i className="fas fa-arrow-left"></i> START SHOPPING
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="kx-cart-page container">
+
+      {/* â”€â”€ KART X Header Block â”€â”€ */}
+      <div className="kx-cart-header-block">
+        <h1 className="kx-cart-heading">YOUR CART</h1>
+      </div>
+
+      <div className="row g-4 mt-2">
+
+        {/* â”€â”€ Items Column â”€â”€ */}
+        <div className="col-12 col-lg-8">
+          <div className="d-flex flex-column gap-3">
+            {cart.data?.products.map((item) => (
+              <div
+                key={item._id}
+                className={`kx-cart-item ${updatingId === item.product._id ? 'kx-item-updating' : ''}`}
+              >
+                {/* Image */}
+                <img src={item.product.imageCover} alt={item.product.title} className="kx-item-img" />
+
+                {/* Info */}
+                <div className="kx-item-info">
+                  <h3 className="kx-item-name">
+                    {item.product.title.split(' ').slice(0, 5).join(' ').toUpperCase()}
+                  </h3>
+                  <span className="kx-item-category">{item.product.category?.name}</span>
+                </div>
+
+                {/* Price Badge */}
+                <div className="kx-item-price-badge">
+                  {item.price} EGP
+                </div>
+
+                {/* Qty Controls */}
+                <div className="kx-qty-row">
+                  <button
+                    className="kx-qty-btn"
+                    onClick={() => handleUpdate(item.product._id, item.count - 1)}
+                    disabled={updatingId === item.product._id || item.count <= 1}
+                  >
+                    <i className="fas fa-minus"></i>
+                  </button>
+                  <span className="kx-qty-value">{item.count}</span>
+                  <button
+                    className="kx-qty-btn"
+                    onClick={() => handleUpdate(item.product._id, item.count + 1)}
+                    disabled={updatingId === item.product._id}
+                  >
+                    <i className="fas fa-plus"></i>
+                  </button>
+                </div>
+
+                {/* Delete */}
+                <button
+                  className="kx-remove-btn"
+                  onClick={() => handleRemove(item.product._id)}
+                  disabled={updatingId === item.product._id}
+                >
+                  <i className="fas fa-trash-can"></i>
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Clear All */}
+          <button className="kx-clear-btn mt-3" onClick={handleClear}>
+            <i className="fas fa-xmark"></i> CLEAR ALL
+          </button>
+        </div>
+
+        {/* â”€â”€ Summary Column â”€â”€ */}
+        <div className="col-12 col-lg-4">
+          <div className="kx-summary-card">
+            <h2 className="kx-summary-title">SUMMARY</h2>
+            <hr className="kx-divider" />
+
+            <div className="kx-summary-row">
+              <span>Subtotal ({cart.numOfCartItems} items)</span>
+              <span>{cart.data?.totalCartPrice?.toLocaleString()} EGP</span>
+            </div>
+            <div className="kx-summary-row">
+              <span>Shipping</span>
+              <span className="kx-free-badge">FREE</span>
+            </div>
+
+            <hr className="kx-divider" />
+
+            <div className="kx-summary-total-row">
+              <span>TOTAL</span>
+              <span className="kx-total-price">{cart.data?.totalCartPrice?.toLocaleString()} EGP</span>
+            </div>
+
+            <Link to={`/checkout/${cart.data?._id}`} className="kx-checkout-btn">
+              CHECKOUT <i className="fas fa-arrow-right"></i>
+            </Link>
+
+            <Link to="/" className="kx-continue-shopping">
+              <i className="fas fa-arrow-left"></i> CONTINUE SHOPPING
+            </Link>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Navigation, Pagination } from 'swiper/modules';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+
+import './CategorySlider.css';
+
+export default function CategorySlider() {
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  async function getCategories() {
+    try {
+      const { data } = await axios.get('https://ecommerce.routemisr.com/api/v1/categories');
+      setCategories(data.data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    getCategories();
+  }, []);
+
+  if (isLoading) return null; // Don't show anything while loading categories (to avoid empty space or layout shift)
+
+  return (
+    <div className="category-slider-container">
+      <div className="category-header-wrap">
+        <span className="category-subtitle">TRENDING</span>
+        <h2 className="category-slider-title">SHOP BY CATEGORY</h2>
+      </div>
+      
+      <div className="category-swiper-wrapper">
+        <Swiper
+          modules={[Autoplay, Navigation, Pagination]}
+          slidesPerView={2}
+          spaceBetween={15}
+          loop={true}
+          navigation={{ nextEl: '.cat-next', prevEl: '.cat-prev' }}
+          autoplay={{ delay: 2000, disableOnInteraction: false }}
+          pagination={{ clickable: true, el: '.cat-dots' }}
+          breakpoints={{
+            // when window width is >= 576px
+            576: {
+              slidesPerView: 3,
+              spaceBetween: 20,
+            },
+            // when window width is >= 768px
+            768: {
+              slidesPerView: 4,
+              spaceBetween: 25,
+            },
+            // when window width is >= 992px
+            992: {
+              slidesPerView: 6,
+              spaceBetween: 30,
+            },
+          }}
+          className="mySwiper"
+        >
+          {categories.map((category) => (
+            <SwiperSlide key={category._id}>
+              <div className="category-slide-item">
+                <div className="category-img-wrapper">
+                  <img 
+                    src={category.image} 
+                    alt={category.name} 
+                    className="category-img" 
+                  />
+                </div>
+                <h3 className="category-name">{category.name}</h3>
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+        
+        {/* Custom nav arrows */}
+        <button className="cat-prev"><i className="fas fa-arrow-left"></i></button>
+        <button className="cat-next"><i className="fas fa-arrow-right"></i></button>
+      </div>
+
+      {/* Pagination dots */}
+      <div className="cat-dots"></div>
+    </div>
+  );
+}
+import React, { useContext, useState } from 'react'
+import { useFormik } from 'formik'
+import { useParams, Link } from 'react-router-dom'
+import { CartContext } from '../../context/CartContext'
+import * as Yup from 'yup'
+import './Checkout.css'
+
+export default function Checkout() {
+  const { cartId } = useParams()
+  const { onlinePayment } = useContext(CartContext)
+  const [isLoading, setIsLoading] = useState(false)
+  const [paymentError, setPaymentError] = useState(null)
+
+  const validationSchema = Yup.object({
+    details: Yup.string().required('Address is required').min(3, 'Min 3 characters'),
+    phone: Yup.string().required('Phone is required').matches(/^01[0125][0-9]{8}$/, 'Enter a valid Egyptian phone number'),
+    city: Yup.string().required('City is required')
+  })
+
+  async function handleCheckout(values) {
+    setIsLoading(true)
+    setPaymentError(null)
+    const baseUrl = window.location.origin
+    const response = await onlinePayment(cartId, baseUrl, values)
+    if (response?.data?.status === 'success') {
+      window.location.href = response.data.session.url
+    } else {
+      setPaymentError('Something went wrong. Please try again.')
+      setIsLoading(false)
+    }
+  }
+
+  const formik = useFormik({
+    initialValues: { details: '', phone: '', city: '' },
+    validationSchema,
+    onSubmit: handleCheckout
+  })
+
+  return (
+    <div className="kx-checkout-page">
+
+      {/* Top bar */}
+      <div className="kx-checkout-topbar container-fluid">
+        <div className="kx-checkout-logo">KART <span>X</span></div>
+        <Link to="/carts" className="kx-back-link">
+          <i className="fas fa-arrow-left"></i> BACK TO CART
+        </Link>
+      </div>
+
+      {/* Form Card */}
+      <div className="kx-checkout-wrap">
+        <div className="kx-checkout-card">
+
+          <div className="kx-checkout-card-header">
+            <h1 className="kx-checkout-title">CHECKOUT</h1>
+            <p className="kx-checkout-subtitle">Complete your order securely.</p>
+            <hr className="kx-co-divider" />
+          </div>
+
+          {paymentError && (
+            <div className="kx-co-error">
+              <i className="fas fa-triangle-exclamation"></i> {paymentError}
+            </div>
+          )}
+
+          <form onSubmit={formik.handleSubmit}>
+            {/* Shipping Section */}
+            <div className="kx-co-section-label">
+              <i className="fas fa-truck"></i> SHIPPING INFO
+            </div>
+
+            <div className="kx-co-field">
+              <label>ADDRESS</label>
+              <input
+                type="text"
+                name="details"
+                placeholder="123 Street Name, Apt 4"
+                value={formik.values.details}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                className={formik.errors.details && formik.touched.details ? 'kx-co-input error' : 'kx-co-input'}
+              />
+              {formik.errors.details && formik.touched.details && (
+                <span className="kx-co-error-msg">{formik.errors.details}</span>
+              )}
+            </div>
+
+            <div className="row g-2">
+              <div className="col-7">
+                <div className="kx-co-field">
+                  <label>CITY</label>
+                  <input
+                    type="text"
+                    name="city"
+                    placeholder="Cairo"
+                    value={formik.values.city}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className={formik.errors.city && formik.touched.city ? 'kx-co-input error' : 'kx-co-input'}
+                  />
+                  {formik.errors.city && formik.touched.city && (
+                    <span className="kx-co-error-msg">{formik.errors.city}</span>
+                  )}
+                </div>
+              </div>
+              <div className="col-5">
+                <div className="kx-co-field">
+                  <label>PHONE</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="010XXXXXXXX"
+                    value={formik.values.phone}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className={formik.errors.phone && formik.touched.phone ? 'kx-co-input error' : 'kx-co-input'}
+                  />
+                  {formik.errors.phone && formik.touched.phone && (
+                    <span className="kx-co-error-msg">{formik.errors.phone}</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <hr className="kx-co-divider mt-3" />
+
+            {/* Pay Button */}
+            <button
+              type="submit"
+              className="kx-pay-btn"
+              disabled={isLoading || !formik.isValid || !formik.dirty}
+            >
+              {isLoading ? (
+                <><i className="fas fa-spinner fa-spin"></i> PROCESSING...</>
+              ) : (
+                <><i className="fas fa-lock"></i> PAY NOW</>
+              )}
+            </button>
+
+            <p className="kx-stripe-note">
+              <i className="fas fa-shield-halved"></i> SECURED VIA STRIPE
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+import React from 'react'
+import { Link } from 'react-router-dom'
+import './Footer.css'
+
+export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="footer">
+      <div className="footer-top">
+        <div className="footer-brand">
+          <h2 className="footer-logo">KART <span>X</span></h2>
+          <p className="footer-tagline">
+            Exclusive drops. Uncompromising aesthetic. Your premier destination for streetwear and premium lifestyle gear.
+          </p>
+          <div className="footer-social">
+            <a href="#!" className="social-btn" aria-label="Facebook">
+              <i className="fab fa-facebook-f"></i>
+            </a>
+            <a href="#!" className="social-btn" aria-label="Instagram">
+              <i className="fab fa-instagram"></i>
+            </a>
+            <a href="#!" className="social-btn" aria-label="Twitter">
+              <i className="fab fa-x-twitter"></i>
+            </a>
+            <a href="#!" className="social-btn" aria-label="YouTube">
+              <i className="fab fa-youtube"></i>
+            </a>
+          </div>
+        </div>
+
+        <div className="footer-links-group">
+          <h4 className="footer-heading">Shop</h4>
+          <ul className="footer-links">
+            <li><Link to="/">All Products</Link></li>
+            <li><Link to="/brands">Brands</Link></li>
+            <li><Link to="/carts">My Cart</Link></li>
+          </ul>
+        </div>
+
+        <div className="footer-links-group">
+          <h4 className="footer-heading">Account</h4>
+          <ul className="footer-links">
+            <li><Link to="/login">Sign In</Link></li>
+            <li><Link to="/register">Create Account</Link></li>
+          </ul>
+        </div>
+
+        <div className="footer-links-group">
+          <h4 className="footer-heading">Support</h4>
+          <ul className="footer-links">
+            <li><a href="#!">Help Center</a></li>
+            <li><a href="#!">Track Order</a></li>
+            <li><a href="#!">Returns</a></li>
+            <li><a href="#!">Contact Us</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="footer-bottom">
+        <p>Â© {currentYear} <strong>KART X</strong>. All rights reserved.</p>
+        <div className="footer-bottom-links">
+          <a href="#!">Privacy Policy</a>
+          <a href="#!">Terms of Service</a>
+          <a href="#!">Cookies</a>
+        </div>
+      </div>
+    </footer>
+  )
+}
+import React from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Navigation, Pagination } from 'swiper/modules';
+import { Link } from 'react-router-dom';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import './HeroSlider.css';
+
+// Local images
+import slide1Img from '../../assets/images/hero/slide1.png';
+import slide2Img from '../../assets/images/hero/slide2.png';
+import slide3Img from '../../assets/images/hero/slide3.png';
+
+const slides = [
+  {
+    tag: 'DROP 04',
+    heading: 'URBAN\nSURVIVAL\nGEAR',
+    sub: 'Built for the city. Ready for anything.',
+    cta: 'SHOP COLLECTION',
+    bg: '#1a1a1a',
+    accent: '#ff6b35',
+    img: slide1Img,
+  },
+  {
+    tag: 'NEW SEASON',
+    heading: 'BOLD\nSTYLES.\nBOLDER\nPRICES.',
+    sub: 'Up to 40% off selected archive pieces.',
+    cta: 'SEE WHAT\'S NEW',
+    bg: '#111827',
+    accent: '#ffe135',
+    img: slide2Img,
+  },
+  {
+    tag: 'LIMITED DROP',
+    heading: 'MOVE\nFAST.\nGRAB\nYOURS.',
+    sub: 'Exclusive drops. Uncompromising aesthetic.',
+    cta: 'EXPLORE DROPS',
+    bg: '#0f0f0f',
+    accent: '#2bbd7e',
+    img: slide3Img,
+  },
+];
+
+export default function HeroSlider() {
+  return (
+    <div className="hero-slider-wrap">
+      <Swiper
+        modules={[Autoplay, Navigation, Pagination]}
+        autoplay={{ delay: 4000, disableOnInteraction: false }}
+        navigation={{ nextEl: '.hero-next', prevEl: '.hero-prev' }}
+        pagination={{ clickable: true, el: '.hero-dots' }}
+        loop={true}
+        className="hero-swiper"
+      >
+        {slides.map((slide, i) => (
+          <SwiperSlide key={i}>
+            <div className="hero-slide" style={{ background: slide.bg }}>
+              {/* Left: Text */}
+              <div className="hero-content">
+                <span className="hero-tag" style={{ background: slide.accent }}>
+                  {slide.tag}
+                </span>
+                <h2 className="hero-heading" style={{ color: '#fff' }}>
+                  {slide.heading.split('\n').map((line, j) => (
+                    <span key={j}>{line}<br /></span>
+                  ))}
+                </h2>
+                <p className="hero-sub">{slide.sub}</p>
+                <Link to="/" className="hero-cta" style={{ background: slide.accent }}>
+                  {slide.cta} <i className="fas fa-arrow-right"></i>
+                </Link>
+              </div>
+
+              {/* Right: Image */}
+              <div className="hero-img-wrap">
+                <img src={slide.img} alt={slide.tag} className="hero-img" />
+              </div>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+
+      {/* Custom nav arrows */}
+      <button className="hero-prev"><i className="fas fa-chevron-left"></i></button>
+      <button className="hero-next"><i className="fas fa-chevron-right"></i></button>
+
+      {/* Pagination dots */}
+      <div className="hero-dots"></div>
+    </div>
+  );
+}
+import React from 'react'
+import { Outlet, useNavigation } from 'react-router-dom'
+import Navbar from "../Navbar/Navbar";
+import Footer from "../Footer/Footer";
+import ScrollToTop from "../ScrollToTop/ScrollToTop";
+import { ProgressBar } from 'react-loader-spinner'
+
+export default function Layout() {
+  const navigation = useNavigation();
+  const isLoading = navigation.state === 'loading';
+
+  return (
+    <div className="layout">
+      <ScrollToTop />
+
+      {/* â”€â”€ Page Loader â”€â”€ */}
+      {isLoading && (
+        <div className="page-loader">
+          <ProgressBar
+            visible={true}
+            height="80"
+            width="80"
+            color="#ff6b35"
+            ariaLabel="progress-bar-loading"
+          />
+        </div>
+      )}
+
+      <Navbar />
+      <main className="layout-main">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  )
+}
+import React from 'react'
+import { ProgressBar } from 'react-loader-spinner'
+
+export default function Loader() {
+  return (
+    <div className='d-flex justify-content-center align-items-center vh-100'>
+      <ProgressBar
+        visible={true}
+        height="80"
+        width="80"
+        color="#4fa94d"
+        ariaLabel="progress-bar-loading"
+        wrapperStyle={{}}
+        wrapperClass=""
+      />
+    </div>
+  )
+}
+import React, { useState, useContext } from 'react'
+import { useFormik } from 'formik'
+import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
+import * as Yup from 'yup';
+import { UserContext } from '../../context/UserContext';
+
+export default function Login() {
+  let navigate = useNavigate();
+  const { setUserToken } = useContext(UserContext);
+  const [apiError, setApiError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function handleLogin(formData) {
+    setIsLoading(true);
+    setApiError(null);
+    try {
+      let response = await axios.post('https://ecommerce.routemisr.com/api/v1/auth/signin', formData);
+      if (response.data.message === 'success') {
+        localStorage.setItem('userToken', response.data.token);
+        setUserToken(response.data.token);
+        navigate('/');
+      }
+    } catch (error) {
+      setApiError(error.response?.data?.message || 'Invalid email or password.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  let validationSchema = Yup.object({
+    email: Yup.string().required('Email is required').email('Enter a valid email'),
+    password: Yup.string().required('Password is required'),
+  });
+
+  let formik = useFormik({
+    initialValues: { email: '', password: '' },
+    validationSchema,
+    onSubmit: handleLogin,
+  });
+
+  return (
+    <section className="auth-section">
+
+      {/* â”€â”€ Left Brand Panel â”€â”€ */}
+      <div className="auth-panel-left auth-panel-dark">
+        <div className="auth-brand-logo">KART <span>X</span></div>
+        <p className="auth-brand-tagline">UNAPOLOGETIC COMMERCE.<br/>RAW ENERGY.</p>
+        <ul className="auth-brand-perks">
+          <li><i className="fas fa-check"></i> Exclusive drops</li>
+          <li><i className="fas fa-check"></i> Raw style</li>
+          <li><i className="fas fa-check"></i> Fast delivery</li>
+        </ul>
+      </div>
+
+      {/* â”€â”€ Form Panel â”€â”€ */}
+      <div className="auth-panel-right">
+        <div className="auth-form-box">
+          <div className="auth-badge">
+            <i className="fas fa-shopping-bag"></i>
+          </div>
+          <h1 className="auth-form-title">SIGN IN</h1>
+          <p className="auth-form-subtitle">Enter your details to proceed.</p>
+
+          {apiError && (
+            <div className="auth-alert auth-alert-error">
+              <i className="fas fa-triangle-exclamation"></i>
+              {apiError}
+            </div>
+          )}
+
+          <form onSubmit={formik.handleSubmit} className="auth-form">
+
+            <div className="auth-field">
+              <label htmlFor="email">Email Address</label>
+              <div className="input-wrapper">
+                <i className="fas fa-envelope input-icon"></i>
+                <input
+                  onChange={formik.handleChange} onBlur={formik.handleBlur}
+                  type="email" name="email" id="email" value={formik.values.email}
+                  placeholder="you@example.com"
+                  className={`auth-input ${formik.touched.email && formik.errors.email ? 'input-error' : ''}`}
+                />
+              </div>
+              {formik.touched.email && formik.errors.email && (
+                <span className="error-msg"><i className="fas fa-circle-exclamation"></i> {formik.errors.email}</span>
+              )}
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="password">
+                Password
+                <a href="#!" className="forgot-link">Forgot password?</a>
+              </label>
+              <div className="input-wrapper">
+                <i className="fas fa-lock input-icon"></i>
+                <input
+                  onChange={formik.handleChange} onBlur={formik.handleBlur}
+                  type="password" name="password" id="password" value={formik.values.password}
+                  placeholder="Enter your password"
+                  className={`auth-input ${formik.touched.password && formik.errors.password ? 'input-error' : ''}`}
+                />
+              </div>
+              {formik.touched.password && formik.errors.password && (
+                <span className="error-msg"><i className="fas fa-circle-exclamation"></i> {formik.errors.password}</span>
+              )}
+            </div>
+
+            <button className="auth-btn" type="submit" disabled={isLoading}>
+              {isLoading
+                ? <><i className="fas fa-spinner fa-spin"></i> Signing in...</>
+                : <><i className="fas fa-arrow-right"></i> Sign In</>
+              }
+            </button>
+
+            <p className="auth-switch">
+              New to KART X? <Link to="/register" className="auth-link">JOIN THE MOVEMENT</Link>
+            </p>
+          </form>
+        </div>
+      </div>
+
+    </section>
+  );
+}
+import React, { useContext, useState } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { UserContext } from '../../context/UserContext'
+import { CartContext } from '../../context/CartContext'
+import './Navbar.css'
+
+export default function Navbar() {
+  const { userToken, setUserToken } = useContext(UserContext);
+  const { cartCount } = useContext(CartContext);
+  const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  function handleLogout() {
+    localStorage.removeItem('userToken');
+    setUserToken(null);
+    navigate('/login');
+  }
+
+  return (
+    <nav className='kx-nav'>
+      {/* Logo */}
+      <NavLink to='/' className='kx-logo'>
+        KART <span>X</span>
+      </NavLink>
+
+      {/* Collapsible Menu */}
+      <div className={`kx-nav-collapse ${isMobileMenuOpen ? 'open' : ''}`}>
+        <ul className='kx-nav-links'>
+          <li><NavLink to='' end onClick={() => setIsMobileMenuOpen(false)}>SHOP</NavLink></li>
+          <li><NavLink to='brands' onClick={() => setIsMobileMenuOpen(false)}>BRANDS</NavLink></li>
+        </ul>
+
+        <div className='kx-nav-actions'>
+          {/* Cart Icon (Desktop) */}
+          <NavLink to='carts' className='kx-cart-btn kx-desktop-cart'>
+            <i className="fas fa-cart-shopping"></i>
+            {cartCount > 0 && <span className="kx-cart-badge">{cartCount}</span>}
+          </NavLink>
+
+          {!userToken ? (
+            <>
+              <NavLink to='login' className='kx-btn-outline' onClick={() => setIsMobileMenuOpen(false)}>
+                <i className="fas fa-right-to-bracket"></i> Login
+              </NavLink>
+              <NavLink to='register' className='kx-btn-solid' onClick={() => setIsMobileMenuOpen(false)}>
+                <i className="fas fa-user-plus"></i> Register
+              </NavLink>
+            </>
+          ) : (
+            <button onClick={handleLogout} className='kx-btn-solid kx-logout'>
+              <i className='fas fa-right-from-bracket'></i> Logout
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Right Icons (Always visible on mobile) */}
+      <div className="kx-nav-right-mobile">
+        {/* Cart Icon (Mobile) */}
+        <NavLink to='carts' className='kx-cart-btn kx-mobile-cart'>
+          <i className="fas fa-cart-shopping"></i>
+          {cartCount > 0 && <span className="kx-cart-badge">{cartCount}</span>}
+        </NavLink>
+
+        {/* Mobile Toggle Button */}
+        <button className="kx-mobile-toggle" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-list-ul'}`}></i>
+        </button>
+      </div>
+    </nav>
+  )
+}
+import React from 'react'
+import { Link } from 'react-router-dom'
+import './Notfound.css'
+
+export default function Notfound() {
+  return (
+    <div className="notfound-page">
+      <div className="notfound-number">404</div>
+      <div className="notfound-card">
+        <p className="notfound-oops">Oops.</p>
+        <p className="notfound-msg">
+          This page got lost. We couldn't find the drop you're looking for.
+        </p>
+        <Link to="/" className="notfound-btn">
+          <i className="fas fa-arrow-left"></i> GO BACK HOME
+        </Link>
+      </div>
+    </div>
+  )
+}
+import React, { useState, useContext } from 'react'
+import { useLoaderData, Link } from 'react-router-dom'
+import { CartContext } from '../../context/CartContext'
+import './ProductDetails.css'
+
+export default function ProductDetails() {
+  const product = useLoaderData();
+  const { addProductToCart } = useContext(CartContext);
+  const [selectedImg, setSelectedImg] = useState(product.imageCover);
+  const [isAdding, setIsAdding] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  async function handleAddToCart() {
+    setIsAdding(true);
+    await addProductToCart(product._id || product.id);
+    setIsAdding(false);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  }
+
+  const allImages = [product.imageCover, ...(product.images || [])];
+
+  function renderStars(rating) {
+    return Array.from({ length: 5 }, (_, i) => (
+      <i
+        key={i}
+        className={`fas fa-star ${i < Math.round(rating) ? 'star-filled' : 'star-empty'}`}
+      ></i>
+    ));
+  }
+
+  return (
+    <div className="pd-page">
+
+      {/* Breadcrumb */}
+      <nav className="pd-breadcrumb">
+        <Link to="/">Products</Link>
+        <i className="fas fa-chevron-right"></i>
+        <span>{product.category?.name}</span>
+        <i className="fas fa-chevron-right"></i>
+        <span className="pd-breadcrumb-current">
+          {product.title.split(' ').slice(0, 3).join(' ')}
+        </span>
+      </nav>
+
+      <div className="pd-container">
+
+        {/* â”€â”€ Left: Images â”€â”€ */}
+        <div className="pd-gallery">
+          <div className="pd-main-img-wrap">
+            {product.priceAfterDiscount && (
+              <span className="discount-badge">
+                -{Math.round(((product.price - product.priceAfterDiscount) / product.price) * 100)}%
+              </span>
+            )}
+            <img src={selectedImg} alt={product.title} className="pd-main-img" />
+          </div>
+
+          {allImages.length > 1 && (
+            <div className="pd-thumbnails">
+              {allImages.map((img, i) => (
+                <button
+                  key={i}
+                  className={`pd-thumb ${selectedImg === img ? 'active' : ''}`}
+                  onClick={() => setSelectedImg(img)}
+                >
+                  <img src={img} alt={`view ${i + 1}`} />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* â”€â”€ Right: Info â”€â”€ */}
+        <div className="pd-info">
+          <span className="pd-category">{product.category?.name}</span>
+          <h1 className="pd-title">{product.title}</h1>
+
+          <div className="pd-meta">
+            <span className="pd-brand">
+              <i className="fas fa-tag"></i> {product.brand?.name}
+            </span>
+            <span className="pd-sold">
+              <i className="fas fa-fire"></i> {product.sold} sold
+            </span>
+          </div>
+
+          {/* Rating */}
+          <div className="pd-rating">
+            <div className="stars">{renderStars(product.ratingsAverage)}</div>
+            <span className="rating-count">
+              {product.ratingsAverage?.toFixed(1)} ({product.ratingsQuantity} reviews)
+            </span>
+          </div>
+
+          {/* Price */}
+          <div className="pd-price-block">
+            {product.priceAfterDiscount ? (
+              <>
+                <span className="pd-price-new">{product.priceAfterDiscount} EGP</span>
+                <span className="pd-price-old">{product.price} EGP</span>
+                <span className="pd-saving">
+                  You save {product.price - product.priceAfterDiscount} EGP
+                </span>
+              </>
+            ) : (
+              <span className="pd-price-new">{product.price} EGP</span>
+            )}
+          </div>
+
+          {/* Description */}
+          <div className="pd-description">
+            <h4>Description</h4>
+            <p>{product.description}</p>
+          </div>
+
+          {/* Stock */}
+          <div className="pd-stock">
+            <i className="fas fa-box"></i>
+            <span>{product.quantity} items in stock</span>
+          </div>
+
+          {/* Actions */}
+          <div className="pd-actions">
+            <button
+              className={`pd-cart-btn ${added ? 'pd-cart-btn-added' : ''}`}
+              onClick={handleAddToCart}
+              disabled={isAdding}
+            >
+              {isAdding ? (
+                <><i className="fas fa-spinner fa-spin"></i> ADDING...</>
+              ) : added ? (
+                <><i className="fas fa-check"></i> ADDED!</>
+              ) : (
+                <><i className="fas fa-cart-plus"></i> ADD TO CART <i className="fas fa-arrow-right"></i></>
+              )}
+            </button>
+            <button className="pd-wish-btn">
+              <i className="fas fa-heart"></i>
+            </button>
+          </div>
+
+          {/* Perks */}
+          <div className="pd-perks">
+            <div className="pd-perk">
+              <i className="fas fa-truck-fast"></i>
+              <span>Free delivery on orders over 500 EGP</span>
+            </div>
+            <div className="pd-perk">
+              <i className="fas fa-rotate-left"></i>
+              <span>Easy 30-day returns</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+import axios from 'axios'
+import { useState, useEffect, useContext } from 'react'
+import { Link } from 'react-router-dom'
+import Loader from '../Loader/Loader'
+import { CartContext } from '../../context/CartContext'
+import CategorySlider from '../CategorySlider/CategorySlider'
+import HeroSlider from '../HeroSlider/HeroSlider'
+import './Products.css'
+
+export default function Products() {
+  const [product, setProduct] = useState([])
+  const [isLoading, setLoading] = useState(true)
+  const [loadingId, setLoadingId] = useState(null)
+  const { addProductToCart } = useContext(CartContext)
+
+  async function addProductItem(id) {
+    setLoadingId(id)
+    let response = await addProductToCart(id)
+    console.log('response', response)
+    setLoadingId(null)
+  }
+
+  function getProducts() {
+    axios.get('https://ecommerce.routemisr.com/api/v1/products')
+      .then(({ data }) => {
+        setProduct(data.data)
+        setLoading(false)
+      })
+      .catch(() => {
+        setLoading(false)
+      })
+  }
+
+  useEffect(() => {
+    getProducts()
+  }, [])
+
+  function renderStars(rating) {
+    return Array.from({ length: 5 }, (_, i) => (
+      <i
+        key={i}
+        className={`fas fa-star ${i < Math.round(rating) ? 'star-filled' : 'star-empty'}`}
+      ></i>
+    ));
+  }
+
+  return (
+    <div className="products-page">
+
+      {isLoading ? <Loader /> : (
+        <>
+          <HeroSlider />
+
+          <div className="container">
+            <div className="kx-section-header">
+              <div>
+                <h1 className="kx-section-title">PRODUCTS</h1>
+                <div className="kx-title-line"></div>
+              </div>
+              <a href="#products-grid" className="kx-see-all-btn">
+                SEE ALL <i className="fas fa-arrow-right"></i>
+              </a>
+            </div>
+
+            <CategorySlider />
+
+            <div className="products-grid" id="products-grid">
+            {product.map((productInfo) => (
+              <div key={productInfo.id} className="kx-product-card">
+
+                {/* Image */}
+                <Link to={`/product/${productInfo.id}`} className="kx-card-img-link">
+                  <div className="kx-card-img-wrap">
+                    <img
+                      src={productInfo.imageCover}
+                      alt={productInfo.title}
+                      className="kx-card-img"
+                      loading="lazy"
+                    />
+                    {productInfo.priceAfterDiscount && (
+                      <span className="kx-discount-pill">
+                        -{Math.round(((productInfo.price - productInfo.priceAfterDiscount) / productInfo.price) * 100)}%
+                      </span>
+                    )}
+                  </div>
+                </Link>
+
+                {/* Body */}
+                <div className="kx-card-body">
+                  <span className="kx-card-category">{productInfo.category?.name}</span>
+                  <h3 className="kx-card-name">
+                    {productInfo.title.split(' ').slice(0, 4).join(' ')}
+                  </h3>
+                  <span className="kx-card-brand">
+                    <i className="fas fa-tag"></i> {productInfo.brand?.name}
+                  </span>
+
+                  <div className="kx-card-rating">
+                    <div className="kx-stars">
+                      {renderStars(productInfo.ratingsAverage)}
+                    </div>
+                    <span className="kx-rating-count">({productInfo.ratingsQuantity})</span>
+                  </div>
+
+                  <div className="kx-card-price">
+                    {productInfo.priceAfterDiscount ? (
+                      <>
+                        <span className="kx-price-new">{productInfo.priceAfterDiscount} EGP</span>
+                        <span className="kx-price-old">{productInfo.price} EGP</span>
+                      </>
+                    ) : (
+                      <span className="kx-price-new">{productInfo.price} EGP</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Add to Cart */}
+                <button
+                  className="kx-card-cart-btn"
+                  onClick={() => addProductItem(productInfo.id)}
+                  disabled={loadingId === productInfo.id}
+                >
+                  {loadingId === productInfo.id
+                    ? <><i className="fas fa-spinner fa-spin"></i> ADDING...</>
+                    : <><i className="fas fa-cart-shopping"></i> ADD TO CART</>
+                  }
+                </button>
+
+              </div>
+            ))}
+            </div>
+          </div>
+        </>
+      )}
+
+    </div>
+  )
+}
+import React, { useContext } from 'react'
+import { Navigate } from 'react-router-dom'
+import { UserContext } from '../../context/UserContext'
+
+export default function ProtectedRoute({ children }) {
+  const { userToken } = useContext(UserContext)
+
+  // Ù„Ùˆ Ù…Ø´ logged in â†’ Ø±ÙˆØ­ Ù„ØµÙØ­Ø© Ø§Ù„Ù€ Login
+  if (!userToken) {
+    return <Navigate to="/login" replace />
+  }
+
+  // Ù„Ùˆ logged in â†’ Ø¹Ø±Ø¶ Ø§Ù„ØµÙØ­Ø©
+  return children
+}
+import React, { useState } from 'react'
+import { useFormik } from 'formik'
+import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
+import * as Yup from 'yup';
+
+export default function Register() {
+  let navigate = useNavigate();
+  const [apiError, setApiError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function handleRegister(formData) {
+    setIsLoading(true);
+    setApiError(null);
+    try {
+      let response = await axios.post('https://ecommerce.routemisr.com/api/v1/auth/signup', formData);
+      if (response.data.message === 'success') {
+        navigate('/login');
+      }
+    } catch (error) {
+      setApiError(error.response?.data?.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  let validationSchema = Yup.object({
+    name: Yup.string().required('Name is required').min(3, 'Min 3 characters').max(10, 'Max 10 characters'),
+    email: Yup.string().required('Email is required').email('Enter a valid email'),
+    phone: Yup.string().required('Phone is required').matches(/^01[1250][0-9]{8}$/, 'Invalid Egyptian phone number'),
+    password: Yup.string().required('Password is required').matches(/^[A-Z][a-z0-9]{6,8}$/, 'Must start with uppercase, 7â€“9 chars'),
+    rePassword: Yup.string().required('Please confirm your password').oneOf([Yup.ref('password')], 'Passwords do not match'),
+  });
+
+  let formik = useFormik({
+    initialValues: { name: '', email: '', password: '', rePassword: '', phone: '' },
+    validationSchema,
+    onSubmit: handleRegister,
+  });
+
+  return (
+    <section className="auth-section">
+
+      {/* â”€â”€ Left Brand Panel (Orange) â”€â”€ */}
+      <div className="auth-panel-left auth-panel-orange">
+        <div className="auth-brand-logo">KART <span>X</span></div>
+        <p className="auth-brand-tagline">Join the movement.<br/>Exclusive drops, raw style,<br/>uncompromising aesthetic.</p>
+      </div>
+
+      <div className="auth-panel-right">
+        <div className="auth-form-box">
+          <h1 className="auth-form-title">Create Account</h1>
+          <p className="auth-form-subtitle">Step into the archive. Start shopping now.</p>
+
+          {apiError && (
+            <div className="auth-alert auth-alert-error">
+              <i className="fas fa-triangle-exclamation"></i>
+              {apiError}
+            </div>
+          )}
+
+          <form onSubmit={formik.handleSubmit} className="auth-form">
+
+            <div className="auth-field">
+              <label htmlFor="name">Full Name</label>
+              <div className="input-wrapper">
+                <i className="fas fa-user input-icon"></i>
+                <input
+                  onChange={formik.handleChange} onBlur={formik.handleBlur}
+                  type="text" name="name" id="name" value={formik.values.name}
+                  placeholder="Enter your name"
+                  className={`auth-input ${formik.touched.name && formik.errors.name ? 'input-error' : ''}`}
+                />
+              </div>
+              {formik.touched.name && formik.errors.name && (
+                <span className="error-msg"><i className="fas fa-circle-exclamation"></i> {formik.errors.name}</span>
+              )}
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="email">Email Address</label>
+              <div className="input-wrapper">
+                <i className="fas fa-envelope input-icon"></i>
+                <input
+                  onChange={formik.handleChange} onBlur={formik.handleBlur}
+                  type="email" name="email" id="email" value={formik.values.email}
+                  placeholder="you@example.com"
+                  className={`auth-input ${formik.touched.email && formik.errors.email ? 'input-error' : ''}`}
+                />
+              </div>
+              {formik.touched.email && formik.errors.email && (
+                <span className="error-msg"><i className="fas fa-circle-exclamation"></i> {formik.errors.email}</span>
+              )}
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="phone">Phone Number</label>
+              <div className="input-wrapper">
+                <i className="fas fa-phone input-icon"></i>
+                <input
+                  onChange={formik.handleChange} onBlur={formik.handleBlur}
+                  type="tel" name="phone" id="phone" value={formik.values.phone}
+                  placeholder="01XXXXXXXXX"
+                  className={`auth-input ${formik.touched.phone && formik.errors.phone ? 'input-error' : ''}`}
+                />
+              </div>
+              {formik.touched.phone && formik.errors.phone && (
+                <span className="error-msg"><i className="fas fa-circle-exclamation"></i> {formik.errors.phone}</span>
+              )}
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="password">Password</label>
+              <div className="input-wrapper">
+                <i className="fas fa-lock input-icon"></i>
+                <input
+                  onChange={formik.handleChange} onBlur={formik.handleBlur}
+                  type="password" name="password" id="password" value={formik.values.password}
+                  placeholder="Min 7 chars, start with uppercase"
+                  className={`auth-input ${formik.touched.password && formik.errors.password ? 'input-error' : ''}`}
+                />
+              </div>
+              {formik.touched.password && formik.errors.password && (
+                <span className="error-msg"><i className="fas fa-circle-exclamation"></i> {formik.errors.password}</span>
+              )}
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="rePassword">Re-Password</label>
+              <div className="input-wrapper">
+                <i className="fas fa-lock input-icon"></i>
+                <input
+                  onChange={formik.handleChange} onBlur={formik.handleBlur}
+                  type="password" name="rePassword" id="rePassword" value={formik.values.rePassword}
+                  placeholder="Repeat your password"
+                  className={`auth-input ${formik.touched.rePassword && formik.errors.rePassword ? 'input-error' : ''}`}
+                />
+              </div>
+              {formik.touched.rePassword && formik.errors.rePassword && (
+                <span className="error-msg"><i className="fas fa-circle-exclamation"></i> {formik.errors.rePassword}</span>
+              )}
+            </div>
+
+            <button className="auth-btn" type="submit" disabled={isLoading}>
+              {isLoading
+                ? <><i className="fas fa-spinner fa-spin"></i> Creating account...</>
+                : <><i className="fas fa-arrow-right"></i> Create My Account</>
+              }
+            </button>
+
+            <p className="auth-switch">
+              Already have an account? <Link to="/login" className="auth-link">Log In</Link>
+            </p>
+          </form>
+        </div>
+      </div>
+
+    </section>
+  );
+}
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+
+export default function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+import { createContext, useState, useEffect } from "react";
+import axios from "axios";
+
+export let CartContext = createContext();
+
+export default function CartContextProvider(props) {
+  const [cartCount, setCartCount] = useState(0);
+
+  function getHeaders() {
+    return { token: localStorage.getItem('userToken') };
+  }
+
+  // 1. Add to Cart
+  function addProductToCart(productId) {
+    return axios.post(`https://ecommerce.routemisr.com/api/v1/cart`,
+      { productId: productId },
+      { headers: getHeaders() }
+    )
+    .then((response) => {
+      setCartCount(response.data.numOfCartItems);
+      return response;
+    })
+    .catch((error) => error);
+  }
+
+  // 2. Get Cart
+  function getLoggedUserCart() {
+    return axios.get(`https://ecommerce.routemisr.com/api/v1/cart`,
+      { headers: getHeaders() }
+    )
+    .then((response) => {
+      setCartCount(response.data.numOfCartItems);
+      return response;
+    })
+    .catch((error) => error);
+  }
+
+  // 3. Remove Item
+  function removeCartItem(productId) {
+    return axios.delete(`https://ecommerce.routemisr.com/api/v1/cart/${productId}`,
+      { headers: getHeaders() }
+    )
+    .then((response) => {
+      setCartCount(response.data.numOfCartItems);
+      return response;
+    })
+    .catch((error) => error);
+  }
+
+  // 4. Update Quantity
+  function updateCartProductQuantity(productId, count) {
+    return axios.put(`https://ecommerce.routemisr.com/api/v1/cart/${productId}`,
+      { count: count },
+      { headers: getHeaders() }
+    )
+    .then((response) => {
+      setCartCount(response.data.numOfCartItems);
+      return response;
+    })
+    .catch((error) => error);
+  }
+
+  // 5. Clear Cart
+  function clearCart() {
+    return axios.delete(`https://ecommerce.routemisr.com/api/v1/cart`,
+      { headers: getHeaders() }
+    )
+    .then((response) => {
+      setCartCount(0);
+      return response;
+    })
+    .catch((error) => error);
+  }
+
+  // 6. Online Payment (Stripe Checkout)
+  function onlinePayment(cartId, url, shippingAddress) {
+    return axios.post(`https://ecommerce.routemisr.com/api/v1/orders/checkout-session/${cartId}?url=${url}`,
+      { shippingAddress: shippingAddress },
+      { headers: getHeaders() }
+    )
+    .then((response) => response)
+    .catch((error) => error);
+  }
+
+  // Get cart count initially when app loads
+  useEffect(() => {
+    if (localStorage.getItem('userToken')) {
+      getLoggedUserCart();
+    }
+  }, []);
+
+  return (
+    <CartContext.Provider value={{ 
+      addProductToCart, 
+      getLoggedUserCart, 
+      removeCartItem, 
+      updateCartProductQuantity, 
+      clearCart, 
+      onlinePayment,
+      cartCount, 
+      setCartCount 
+    }}>
+      {props.children}
+    </CartContext.Provider>
+  );
+}
+import { createContext, useState } from "react";
+
+export let UserContext = createContext();
+
+export default function UserContextProvider({ children }) {
+  const [userToken, setUserToken] = useState(localStorage.getItem('userToken'));
+
+  return (
+    <UserContext.Provider value={{ userToken, setUserToken }}>
+      {children}
+    </UserContext.Provider>
+  );
+}
+import './App.css'
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+import Layout from './components/Layout/Layout'
+import Products from './components/Products/Products'
+import Login from './components/Login/Login'
+import Register from './components/Register/Register'
+import Brands from './components/Brands/Brands'
+import Carts from './components/Carts/Carts'
+import Notfound from './components/Notfound/Notfound'
+import ProductDetails from './components/ProductDetails/ProductDetails'
+import UserContextProvider from './context/UserContext'
+import CartContextProvider from './context/CartContext'
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute'
+import Checkout from './components/Checkout/Checkout'
+import { productsLoader, productDetailsLoader } from './loaders/loaders'
+
+function App() {
+  let paths = createBrowserRouter([
+    {
+      path: '', element: <Layout />, children: [
+        { index: true,         element: <ProtectedRoute><Products /></ProtectedRoute> },
+        { path: 'product/:id', element: <ProtectedRoute><ProductDetails /></ProtectedRoute>, loader: productDetailsLoader },
+        { path: 'brands',      element: <ProtectedRoute><Brands /></ProtectedRoute> },
+        { path: 'carts',       element: <ProtectedRoute><Carts /></ProtectedRoute> },
+        { path: 'login',       element: <Login /> },
+        { path: 'register',    element: <Register /> },
+        { path: 'allorders',   element: <Navigate to="/" replace /> },
+        { path: '*',           element: <Notfound /> },
+      ]
+    },
+    { path: 'checkout/:cartId', element: <ProtectedRoute><Checkout /></ProtectedRoute> },
+  ])
+
+  return (
+    <UserContextProvider>
+      <CartContextProvider>
+        <RouterProvider router={paths} />
+      </CartContextProvider>
+    </UserContextProvider>
+  )
+}
+
+export default App

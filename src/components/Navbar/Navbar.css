@@ -1,0 +1,280 @@
+/* ── KART X Navbar ── */
+.kx-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 60px;
+  background: #fff;
+  border-bottom: 3px solid #111;
+}
+
+/* Logo */
+.kx-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  font-style: italic;
+  color: #111;
+  text-decoration: none;
+  letter-spacing: -0.03em;
+  flex-shrink: 0;
+}
+
+.kx-logo span {
+  color: #ff6b35;
+}
+
+/* Mobile right section (Hidden on desktop) */
+.kx-nav-right-mobile {
+  display: none;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Mobile Toggle Button */
+.kx-mobile-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  color: #111;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.kx-mobile-toggle:hover {
+  border-color: #111;
+}
+
+/* Collapsible Menu Container */
+.kx-nav-collapse {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  margin-left: 2rem;
+}
+
+/* Nav Links */
+.kx-nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+}
+
+.kx-nav-links a {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #111;
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.kx-nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: #ff6b35;
+  transition: width 0.25s ease;
+}
+
+.kx-nav-links a:hover::after,
+.kx-nav-links a.active::after {
+  width: 100%;
+}
+
+.kx-nav-links a.active {
+  color: #ff6b35;
+}
+
+/* Actions Row */
+.kx-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Cart Button */
+.kx-cart-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 2.5px solid #111;
+  border-radius: 4px;
+  color: #111;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.18s ease;
+  box-shadow: 3px 3px 0 #111;
+}
+
+.kx-cart-btn:hover {
+  background: #111;
+  color: #fff;
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 #ff6b35;
+}
+
+.kx-cart-badge {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  background: #ff6b35;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  line-height: 1;
+  padding: 0 3px;
+}
+
+/* Auth Buttons */
+.kx-btn-outline {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #111;
+  text-decoration: none;
+  border: 2px solid #111;
+  border-radius: 4px;
+  padding: 0.45rem 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.18s ease;
+  box-shadow: 2px 2px 0 #111;
+}
+
+.kx-btn-outline:hover {
+  background: #111;
+  color: #fff;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #ff6b35;
+}
+
+.kx-btn-solid {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #fff;
+  background: #111;
+  text-decoration: none;
+  border: 2px solid #111;
+  border-radius: 4px;
+  padding: 0.45rem 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 2px 2px 0 #ff6b35;
+}
+
+.kx-btn-solid:hover {
+  background: #ff6b35;
+  border-color: #ff6b35;
+  box-shadow: 2px 2px 0 #111;
+  transform: translate(-1px, -1px);
+}
+
+.kx-logout {
+  background: #111;
+}
+
+/* Responsive Mobile View */
+@media (max-width: 768px) {
+  .kx-nav {
+    padding: 0 1rem;
+  }
+
+  .kx-nav-right-mobile {
+    display: flex; /* Show right container on mobile */
+  }
+
+  .kx-mobile-toggle {
+    display: flex; /* Show toggle on mobile */
+  }
+
+  .kx-desktop-cart {
+    display: none !important; /* Hide desktop cart on mobile */
+  }
+
+  .kx-nav-collapse {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin: 0;
+    padding: 0;
+    border-bottom: 3px solid #111;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-out;
+    z-index: 1000;
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+  }
+
+  .kx-nav-collapse.open {
+    max-height: 400px;
+  }
+
+  .kx-nav-links {
+    flex-direction: column;
+    width: 100%;
+    gap: 0;
+  }
+
+  .kx-nav-links li {
+    width: 100%;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .kx-nav-links a {
+    display: block;
+    padding: 1rem;
+  }
+
+  .kx-nav-actions {
+    width: 100%;
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .kx-btn-outline, .kx-btn-solid {
+    justify-content: center;
+  }
+}

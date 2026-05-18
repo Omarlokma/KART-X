@@ -1,0 +1,115 @@
+/* =============================================
+   KART X — Auth Panel Variants
+   ============================================= */
+
+/* Dark panel (Login) */
+.auth-panel-dark {
+  background: #111 !important;
+  color: #fff !important;
+}
+
+/* Orange panel (Register) */
+.auth-panel-orange {
+  background: #ff6b35 !important;
+  color: #fff !important;
+}
+
+/* Brand Logo inside panel */
+.auth-brand-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin-bottom: 1.5rem;
+}
+
+.auth-brand-logo span {
+  color: #ff6b35;
+}
+
+.auth-panel-orange .auth-brand-logo span {
+  color: #111;
+}
+
+/* Tagline */
+.auth-brand-tagline {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1.5;
+  color: #ff6b35;
+  margin-bottom: 2rem;
+}
+
+.auth-panel-orange .auth-brand-tagline {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: none;
+}
+
+/* Perks list (Login only) */
+.auth-brand-perks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.auth-brand-perks li {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ccc;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.auth-brand-perks li i {
+  color: #ff6b35;
+  font-size: 0.8rem;
+}
+
+/* =============================================
+   KART X - Brands Page Header Override
+   ============================================= */
+.brands-header {
+  background: #ffe135;
+  border-bottom: 3px solid #111;
+  padding: 3rem 2rem;
+  text-align: center;
+  margin: -3rem -1rem 3rem -1rem;
+}
+
+.brands-title {
+  display: inline-block;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #111;
+  background: #fff;
+  border: 4px solid #111;
+  padding: 0.4rem 1.5rem;
+  box-shadow: 6px 6px 0 #111;
+  letter-spacing: -0.02em;
+  margin-bottom: 0;
+}
+
+.brands-title::after {
+  display: none;
+}
+
+.brands-subtitle {
+  margin-top: 1rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
